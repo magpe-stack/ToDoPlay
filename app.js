@@ -1,102 +1,151 @@
-// Estado do Jogador e Dados Padrão
+// Base dos Chefões do Jogo
+const BOSSES = [
+  { stage: 1, name: "Monstro da Procrastinação", maxHp: 100, emoji: "👹", desc: "O primeiro obstáculo na sua jornada pelo foco!" },
+  { stage: 2, name: "Golem da Distração", maxHp: 200, emoji: "🗿", desc: "Tenta roubar sua atenção a todo segundo." },
+  { stage: 3, name: "Dragão do Cansaço", maxHp: 350, emoji: "🐉", desc: "Fogo nas pendências para superá-lo!" },
+  { stage: 4, name: "Sombra da Dúvida", maxHp: 500, emoji: "👤", desc: "Confie na sua constância para vencê-lo." },
+  { stage: 5, name: "Imperador do Caos", maxHp: 800, emoji: "👑", desc: "O grande vilão da organização pessoal!" }
+];
+
+// Gerador Automatizado de 100 Medalhas com Frases Secretas
+function generate100Achievements() {
+  const achs = [];
+  
+  // Categorias: tasks (1..50), streak (51..70), boss (71..85), level (86..100)
+  for (let i = 1; i <= 50; i++) {
+    achs.push({
+      id: `a_${i}`,
+      category: 'tasks',
+      title: `Mestre das Quests ${i}`,
+      desc: `Conclua ${i * 2} tarefas no total.`,
+      target: i * 2,
+      icon: i % 2 === 0 ? '🎯' : '⚔️',
+      phrase: `Frase Secreta #${i}: "O sucesso é a soma de pequenos esforços repetidos dia após dia."`
+    });
+  }
+
+  for (let i = 51; i <= 70; i++) {
+    const dayReq = i - 50;
+    achs.push({
+      id: `a_${i}`,
+      category: 'streak',
+      title: `Guardião da Chama ${dayReq}d`,
+      desc: `Alcance ${dayReq} dias de sequência seguidos.`,
+      target: dayReq,
+      icon: '🔥',
+      phrase: `Frase Secreta #${i}: "A constância vence o talento quando o talento não é constante."`
+    });
+  }
+
+  for (let i = 71; i <= 85; i++) {
+    const bossReq = i - 70;
+    achs.push({
+      id: `a_${i}`,
+      category: 'boss',
+      title: `Caçador de Chefões ${bossReq}`,
+      desc: `Derrote ${bossReq} chefões na arena.`,
+      target: bossReq,
+      icon: '🏆',
+      phrase: `Frase Secreta #${i}: "Sua força aumenta na exata medida dos obstáculos que você supera."`
+    });
+  }
+
+  for (let i = 86; i <= 100; i++) {
+    const lvlReq = i - 85;
+    achs.push({
+      id: `a_${i}`,
+      category: 'level',
+      title: `Sábio do Foco Nv.${lvlReq}`,
+      desc: `Alcance o Nível ${lvlReq} de jogador.`,
+      target: lvlReq,
+      icon: '⭐',
+      phrase: `Frase Secreta #${i}: "Sua única competição real é contra quem você foi ontem."`
+    });
+  }
+
+  return achs;
+}
+
+const ACHIEVEMENTS_DATA = generate100Achievements();
+
+// Estado do Jogador
 const DEFAULT_PLAYER = {
   xp: 0,
   level: 1,
-  coins: 0,
   streak: 0,
   lastCompletedDate: null,
-  totalTasksCompleted: 0
+  totalTasksCompleted: 0,
+  bossStage: 1,
+  bossCurrentHp: 100,
+  bossesDefeated: 0,
+  theme: 'dark'
 };
 
-const DEFAULT_REWARDS = [
-  { id: 'r1', title: 'Ver 1 Episódio de Série', cost: 50 },
-  { id: 'r2', title: 'Comer um Doce / Sobremesa', cost: 75 },
-  { id: 'r3', title: '30 Minutos de Videogame/Lazer', cost: 100 }
-];
-
-const ACHIEVEMENTS = [
-  { id: 'a1', title: 'Primeira Vitória', desc: 'Conclua a sua 1ª tarefa', icon: '🐣', target: 1, type: 'tasks' },
-  { id: 'a2', title: 'Produtivo', desc: 'Conclua 10 tarefas no total', icon: '⚡', target: 10, type: 'tasks' },
-  { id: 'a3', title: 'Mestre da Rotina', desc: 'Conclua 50 tarefas no total', icon: '👑', target: 50, type: 'tasks' },
-  { id: 'a4', title: 'Fogo Sagrado', desc: 'Alcance 3 dias de Streak seguidos', icon: '🔥', target: 3, type: 'streak' },
-  { id: 'a5', title: 'Magnata das Moedas', desc: 'Acumule 200 moedas', icon: '💰', target: 200, type: 'coins' }
-];
-
-const LEVELS = [
-  { level: 1, title: 'Aprendiz de Foco', xpReq: 100, avatar: '🎮' },
-  { level: 2, title: 'Aventureiro Diário', xpReq: 250, avatar: '🏹' },
-  { level: 3, title: 'Guerreiro da Rotina', xpReq: 500, avatar: '⚔️' },
-  { level: 4, title: 'Mestre da Produtividade', xpReq: 900, avatar: '🧙‍♂️' },
-  { level: 5, title: 'Lenda do Foco', xpReq: 1500, avatar: '🐲' }
-];
-
-// Carregar Dados Salvos do localStorage
-let player = JSON.parse(localStorage.getItem('tdp_player')) || DEFAULT_PLAYER;
-let tasks = JSON.parse(localStorage.getItem('tdp_tasks')) || [];
-let rewards = JSON.parse(localStorage.getItem('tdp_rewards')) || DEFAULT_REWARDS;
-
-let deferredPrompt = null;
+let player = JSON.parse(localStorage.getItem('tdp_v2_player')) || DEFAULT_PLAYER;
+let tasks = JSON.parse(localStorage.getItem('tdp_v2_tasks')) || [];
+let activeAchCategory = 'all';
 
 window.addEventListener('DOMContentLoaded', () => {
-  checkDailyReset();
+  applyTheme(player.theme || 'dark');
   updateHUD();
   renderTasks();
-  renderRewards();
+  renderBoss();
   renderAchievements();
   setupPWA();
   if (window.lucide) lucide.createIcons();
 });
 
-// Verifica mudança de dia para controle de Streak
-function checkDailyReset() {
-  const today = new Date().toISOString().split('T')[0];
-  if (player.lastCompletedDate) {
-    const lastDate = new Date(player.lastCompletedDate);
-    const currDate = new Date(today);
-    const diffDays = Math.round((currDate - lastDate) / (1000 * 60 * 60 * 24));
+// Tema Claro / Escuro
+function toggleTheme() {
+  const newTheme = player.theme === 'dark' ? 'light' : 'dark';
+  player.theme = newTheme;
+  applyTheme(newTheme);
+  savePlayerData();
+}
 
-    if (diffDays > 1) {
-      player.streak = 0; // Perdeu o streak se passou mais de 1 dia sem concluir tarefas
-      savePlayerData();
-    }
+function applyTheme(theme) {
+  const html = document.documentElement;
+  const sun = document.getElementById('themeIconSun');
+  const moon = document.getElementById('themeIconMoon');
+
+  if (theme === 'light') {
+    html.classList.add('light');
+    html.classList.remove('dark');
+    if (sun) sun.classList.remove('hidden');
+    if (moon) moon.classList.add('hidden');
+  } else {
+    html.classList.add('dark');
+    html.classList.remove('light');
+    if (sun) sun.classList.add('hidden');
+    if (moon) moon.classList.remove('hidden');
   }
 }
 
-// Atualiza o HUD do Jogador
+// HUD
 function updateHUD() {
-  const currentLvlInfo = LEVELS.find(l => l.level === player.level) || LEVELS[LEVELS.length - 1];
-  
-  document.getElementById('playerAvatar').textContent = currentLvlInfo.avatar;
-  document.getElementById('playerTitle').textContent = currentLvlInfo.title;
   document.getElementById('levelBadge').textContent = `Nv.${player.level}`;
-  document.getElementById('coinCount').textContent = player.coins;
-  document.getElementById('rewardCoinBalance').textContent = player.coins;
   document.getElementById('streakCount').textContent = player.streak;
+  document.getElementById('bossesDefeatedCount').textContent = player.bossesDefeated;
 
-  // XP
-  const req = currentLvlInfo.xpReq;
-  const pct = Math.min(100, Math.round((player.xp / req) * 100));
-  document.getElementById('xpText').textContent = `${player.xp} / ${req} XP`;
+  const reqXp = player.level * 100;
+  const pct = Math.min(100, Math.round((player.xp / reqXp) * 100));
+  document.getElementById('xpText').textContent = `${player.xp} / ${reqXp} XP`;
   document.getElementById('xpBar').style.width = `${pct}%`;
 }
 
 function savePlayerData() {
-  localStorage.setItem('tdp_player', JSON.stringify(player));
+  localStorage.setItem('tdp_v2_player', JSON.stringify(player));
   updateHUD();
+  renderBoss();
   renderAchievements();
 }
 
 function saveTasks() {
-  localStorage.setItem('tdp_tasks', JSON.stringify(tasks));
+  localStorage.setItem('tdp_v2_tasks', JSON.stringify(tasks));
   renderTasks();
 }
 
-function saveRewards() {
-  localStorage.setItem('tdp_rewards', JSON.stringify(rewards));
-  renderRewards();
-}
-
-// Manipulação de Tarefas
+// Tarefas e Combate ao Chefão
 function handleAddTask(e) {
   e.preventDefault();
   const title = document.getElementById('inputTaskTitle').value.trim();
@@ -104,19 +153,16 @@ function handleAddTask(e) {
 
   if (!title) return;
 
-  const newTask = {
+  tasks.unshift({
     id: 't_' + Date.now(),
     title,
     difficulty,
-    completed: false,
-    createdDate: new Date().toISOString().split('T')[0]
-  };
+    completed: false
+  });
 
-  tasks.unshift(newTask);
   saveTasks();
-
   document.getElementById('inputTaskTitle').value = '';
-  showToast('⚔️ Nova Quest adicionada!', '🎯');
+  showToast('Quest adicionada!', '⚔️');
 }
 
 function completeTask(id) {
@@ -125,15 +171,40 @@ function completeTask(id) {
 
   task.completed = true;
 
-  // Cálculo de XP e Moedas por Dificuldade
   let xpEarned = 15;
-  let coinsEarned = 10;
-  if (task.difficulty === 'medium') { xpEarned = 30; coinsEarned = 25; }
-  if (task.difficulty === 'hard') { xpEarned = 60; coinsEarned = 50; }
+  let damage = 15;
+  if (task.difficulty === 'medium') { xpEarned = 30; damage = 30; }
+  if (task.difficulty === 'hard') { xpEarned = 60; damage = 60; }
 
   player.xp += xpEarned;
-  player.coins += coinsEarned;
   player.totalTasksCompleted++;
+
+  // Aplicar Dano no Chefão
+  player.bossCurrentHp = Math.max(0, player.bossCurrentHp - damage);
+
+  // Animação de Dano no Emoji
+  const bossEmoji = document.getElementById('bossEmoji');
+  if (bossEmoji) {
+    bossEmoji.classList.add('scale-125', 'rotate-12');
+    setTimeout(() => bossEmoji.classList.remove('scale-125', 'rotate-12'), 200);
+  }
+
+  // Se Derrotou o Chefão
+  if (player.bossCurrentHp <= 0) {
+    player.bossesDefeated++;
+    player.bossStage++;
+    
+    const nextBoss = BOSSES.find(b => b.stage === player.bossStage) || {
+      stage: player.bossStage,
+      name: `Chefão Supremo Lvl ${player.bossStage}`,
+      maxHp: player.bossStage * 250,
+      emoji: "🐲",
+      desc: "Um inimigo poderoso gerado pela sua alta produtividade!"
+    };
+
+    player.bossCurrentHp = nextBoss.maxHp;
+    showToast(`💥 CHEFÃO DERROTADO! Você avançou para a Fase ${player.bossStage}!`, '🏆');
+  }
 
   // Atualizar Streak
   const today = new Date().toISOString().split('T')[0];
@@ -146,12 +217,8 @@ function completeTask(id) {
   savePlayerData();
   saveTasks();
 
-  // Confetti
-  if (window.confetti) {
-    confetti({ particleCount: 40, spread: 60, origin: { y: 0.8 } });
-  }
-
-  showToast(`Quest Concluída! +${xpEarned} XP | +🪙 ${coinsEarned}`, '✨');
+  if (window.confetti) confetti({ particleCount: 35, spread: 60 });
+  showToast(`Quest Concluída! +${xpEarned} XP | 💥 ${damage} de Dano!`, '✨');
 }
 
 function deleteTask(id) {
@@ -160,59 +227,72 @@ function deleteTask(id) {
 }
 
 function checkLevelUp() {
-  const currentLvlInfo = LEVELS.find(l => l.level === player.level) || LEVELS[LEVELS.length - 1];
-  if (player.xp >= currentLvlInfo.xpReq && player.level < LEVELS.length) {
+  const reqXp = player.level * 100;
+  if (player.xp >= reqXp) {
     player.level++;
-    player.xp -= currentLvlInfo.xpReq;
-    showToast(`🎉 PARABÉNS! Você subiu para o Nível ${player.level}!`, '🏆');
+    player.xp -= reqXp;
+    showToast(`🎉 NÍVEL AUMENTADO! Você agora é Nível ${player.level}!`, '⭐');
   }
 }
 
-// Renderização de Tarefas
+// Renderizar Arena do Chefão
+function renderBoss() {
+  const currentBoss = BOSSES.find(b => b.stage === player.bossStage) || {
+    stage: player.bossStage,
+    name: `Chefão Supremo Nv.${player.bossStage}`,
+    maxHp: player.bossStage * 250,
+    emoji: "🐲",
+    desc: "Um inimigo colossal desafiando seu foco!"
+  };
+
+  document.getElementById('bossStageText').textContent = `Fase ${currentBoss.stage}`;
+  document.getElementById('bossEmoji').textContent = currentBoss.emoji;
+  document.getElementById('bossName').textContent = currentBoss.name;
+  document.getElementById('bossDesc').textContent = currentBoss.desc;
+
+  const pct = Math.min(100, Math.round((player.bossCurrentHp / currentBoss.maxHp) * 100));
+  document.getElementById('bossHpText').textContent = `${player.bossCurrentHp} / ${currentBoss.maxHp}`;
+  document.getElementById('bossHpBar').style.width = `${pct}%`;
+}
+
+// Renderizar Tarefas
 function renderTasks() {
   const listActive = document.getElementById('listTasks');
   const listCompleted = document.getElementById('listCompletedTasks');
   const activeBadge = document.getElementById('activeCountBadge');
 
-  const activeTasks = tasks.filter(t => !t.completed);
-  const completedTasks = tasks.filter(t => t.completed);
+  const active = tasks.filter(t => !t.completed);
+  const completed = tasks.filter(t => t.completed);
 
-  activeBadge.textContent = activeTasks.length;
+  activeBadge.textContent = active.length;
 
-  if (activeTasks.length === 0) {
+  if (active.length === 0) {
     listActive.innerHTML = `
       <div class="text-center py-8 bg-slate-900/50 border border-slate-800/60 rounded-2xl">
         <p class="text-3xl mb-1">🎉</p>
-        <p class="text-sm font-bold text-slate-300">Todas as Quests concluídas!</p>
-        <p class="text-xs text-slate-500 mt-1">Adicione novas tarefas acima para ganhar mais XP.</p>
+        <p class="text-sm font-bold text-slate-300">Todas as tarefas concluídas!</p>
       </div>
     `;
   } else {
-    listActive.innerHTML = activeTasks.map(t => {
-      let diffBadge = '🟢 Fácil (+15 XP)';
-      if (t.difficulty === 'medium') diffBadge = '🟡 Média (+30 XP)';
-      if (t.difficulty === 'hard') diffBadge = '🔴 Difícil (+60 XP)';
-
-      return `
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow transition hover:border-slate-700">
-          <div class="flex items-center gap-3 flex-1">
-            <button onclick="completeTask('${t.id}')" class="check-box-btn flex-shrink-0" title="Marcar como concluída">
-              <i data-lucide="check" class="w-4 h-4 text-slate-600 hover:text-indigo-400"></i>
-            </button>
-            <div>
-              <p class="text-sm font-semibold text-white leading-snug">${t.title}</p>
-              <span class="text-[10px] font-bold text-slate-400 mt-0.5 inline-block">${diffBadge}</span>
-            </div>
-          </div>
-          <button onclick="deleteTask('${t.id}')" class="text-slate-600 hover:text-red-400 p-1.5 transition">
-            <i data-lucide="trash-2" class="w-4 h-4"></i>
+    listActive.innerHTML = active.map(t => `
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow">
+        <div class="flex items-center gap-3 flex-1">
+          <button onclick="completeTask('${t.id}')" class="check-box-btn flex-shrink-0">
+            <i data-lucide="check" class="w-4 h-4 text-slate-600 hover:text-indigo-400"></i>
           </button>
+          <div>
+            <p class="text-sm font-semibold text-white leading-snug">${t.title}</p>
+            <span class="text-[10px] font-bold text-slate-400 mt-0.5 inline-block">${t.difficulty.toUpperCase()}</span>
+          </div>
         </div>
-      `;
-    }).join('');
+        <button onclick="deleteTask('${t.id}')" class="text-slate-600 hover:text-red-400 p-1.5">
+          <i data-lucide="trash-2" class="w-4 h-4"></i>
+        </button>
+      </div>
+    `).join('');
   }
 
-  listCompleted.innerHTML = completedTasks.map(t => `
+  listCompleted.innerHTML = completed.map(t => `
     <div class="bg-slate-900/40 border border-slate-800/40 rounded-xl p-3 flex items-center justify-between gap-3 text-slate-500">
       <div class="flex items-center gap-2.5">
         <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-500"></i>
@@ -227,108 +307,77 @@ function renderTasks() {
   if (window.lucide) lucide.createIcons();
 }
 
-// Loja de Recompensas
-function handleAddReward(e) {
-  e.preventDefault();
-  const title = document.getElementById('inputRewardTitle').value.trim();
-  const cost = parseInt(document.getElementById('inputRewardCost').value);
-
-  if (!title || isNaN(cost)) return;
-
-  rewards.push({ id: 'r_' + Date.now(), title, cost });
-  saveRewards();
-
-  document.getElementById('inputRewardTitle').value = '';
-  showToast('🎁 Nova recompensa cadastrada!', '🛒');
-}
-
-function buyReward(id) {
-  const reward = rewards.find(r => r.id === id);
-  if (!reward) return;
-
-  if (player.coins < reward.cost) {
-    showToast('Moedas insuficientes! Conclua mais quests.', '⚠️');
-    return;
-  }
-
-  player.coins -= reward.cost;
-  savePlayerData();
-  showToast(`🎉 Recompensa resgatada: "${reward.title}"! Aproveite!`, '🍿');
-}
-
-function deleteReward(id) {
-  rewards = rewards.filter(r => r.id !== id);
-  saveRewards();
-}
-
-function renderRewards() {
-  const list = document.getElementById('listRewards');
-  
-  if (rewards.length === 0) {
-    list.innerHTML = `<p class="text-xs text-slate-500 col-span-2 text-center py-6">Nenhuma recompensa cadastrada.</p>`;
-    return;
-  }
-
-  list.innerHTML = rewards.map(r => `
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between gap-3 shadow">
-      <div class="flex justify-between items-start">
-        <h4 class="text-sm font-bold text-white">${r.title}</h4>
-        <button onclick="deleteReward('${r.id}')" class="text-slate-600 hover:text-red-400">
-          <i data-lucide="x" class="w-3.5 h-3.5"></i>
-        </button>
-      </div>
-      <div class="flex items-center justify-between pt-2 border-t border-slate-800/60">
-        <span class="text-xs font-extrabold text-amber-400">🪙 ${r.cost} moedas</span>
-        <button onclick="buyReward('${r.id}')" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl transition">
-          Resgatar
-        </button>
-      </div>
-    </div>
-  `).join('');
-
-  if (window.lucide) lucide.createIcons();
-}
-
-// Conquistas
+// Renderizar Conquistas
 function renderAchievements() {
   const list = document.getElementById('listAchievements');
+  let unlockedTotal = 0;
 
-  list.innerHTML = ACHIEVEMENTS.map(a => {
+  const filtered = ACHIEVEMENTS_DATA.filter(a => activeAchCategory === 'all' || a.category === activeAchCategory);
+
+  list.innerHTML = filtered.map(a => {
     let unlocked = false;
-    if (a.type === 'tasks' && player.totalTasksCompleted >= a.target) unlocked = true;
-    if (a.type === 'streak' && player.streak >= a.target) unlocked = true;
-    if (a.type === 'coins' && player.coins >= a.target) unlocked = true;
+    if (a.category === 'tasks' && player.totalTasksCompleted >= a.target) unlocked = true;
+    if (a.category === 'streak' && player.streak >= a.target) unlocked = true;
+    if (a.category === 'boss' && player.bossesDefeated >= a.target) unlocked = true;
+    if (a.category === 'level' && player.level >= a.target) unlocked = true;
+
+    if (unlocked) unlockedTotal++;
 
     return `
-      <div class="bg-slate-900 border ${unlocked ? 'border-indigo-500/50 bg-indigo-500/5' : 'border-slate-800 opacity-60'} rounded-2xl p-3.5 flex items-center gap-3">
-        <div class="text-3xl p-2 bg-slate-950 rounded-xl border border-slate-800 flex-shrink-0">
-          ${a.icon}
-        </div>
-        <div>
-          <div class="flex items-center gap-1.5">
-            <h4 class="text-xs font-bold ${unlocked ? 'text-indigo-400' : 'text-slate-400'}">${a.title}</h4>
-            ${unlocked ? '<span class="text-[9px] bg-indigo-500 text-white font-bold px-1.5 py-0.2 rounded-full">OK</span>' : ''}
+      <div class="bg-slate-900 border ${unlocked ? 'border-amber-500/50 bg-amber-500/5' : 'border-slate-800 opacity-50'} rounded-2xl p-3.5 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="text-2xl p-2 bg-slate-950 rounded-xl border border-slate-800 flex-shrink-0">
+            ${unlocked ? a.icon : '🔒'}
           </div>
-          <p class="text-[11px] text-slate-400 leading-tight mt-0.5">${a.desc}</p>
+          <div>
+            <h4 class="text-xs font-bold ${unlocked ? 'text-amber-400' : 'text-slate-400'}">${a.title}</h4>
+            <p class="text-[11px] text-slate-400 leading-tight mt-0.5">${a.desc}</p>
+          </div>
         </div>
+        ${unlocked ? `
+          <button onclick="openPhraseModal('${a.title}', '${a.phrase}', '${a.icon}')" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-[10px] rounded-lg shadow whitespace-nowrap">
+            Ver Frase
+          </button>
+        ` : ''}
       </div>
     `;
   }).join('');
+
+  document.getElementById('achievementsCountBadge').textContent = `${unlockedTotal} / 100`;
 }
 
-// Navegação por Abas
+function filterAchievements(cat) {
+  activeAchCategory = cat;
+  document.querySelectorAll('.ach-tab').forEach(b => b.classList.remove('active', 'bg-indigo-600', 'text-white'));
+  renderAchievements();
+}
+
+// Modal de Frase Secreta
+function openPhraseModal(title, phrase, icon) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalPhrase').textContent = phrase;
+  document.getElementById('modalIcon').textContent = icon;
+  document.getElementById('phraseModal').classList.remove('hidden');
+  document.getElementById('phraseModal').classList.add('flex');
+}
+
+function closePhraseModal() {
+  document.getElementById('phraseModal').classList.add('hidden');
+  document.getElementById('phraseModal').classList.remove('flex');
+}
+
 function switchTab(tab) {
   document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
   document.getElementById('secTasks').classList.add('hidden');
-  document.getElementById('secRewards').classList.add('hidden');
+  document.getElementById('secBoss').classList.add('hidden');
   document.getElementById('secAchievements').classList.add('hidden');
 
   if (tab === 'tasks') {
     document.getElementById('tabTasks').classList.add('active');
     document.getElementById('secTasks').classList.remove('hidden');
-  } else if (tab === 'rewards') {
-    document.getElementById('tabRewards').classList.add('active');
-    document.getElementById('secRewards').classList.remove('hidden');
+  } else if (tab === 'boss') {
+    document.getElementById('tabBoss').classList.add('active');
+    document.getElementById('secBoss').classList.remove('hidden');
   } else if (tab === 'achievements') {
     document.getElementById('tabAchievements').classList.add('active');
     document.getElementById('secAchievements').classList.remove('hidden');
@@ -341,33 +390,11 @@ function showToast(msg, icon = '🎉') {
   document.getElementById('toastIcon').textContent = icon;
 
   toast.classList.remove('opacity-0', 'pointer-events-none');
-  setTimeout(() => {
-    toast.classList.add('opacity-0', 'pointer-events-none');
-  }, 3000);
+  setTimeout(() => toast.classList.add('opacity-0', 'pointer-events-none'), 3000);
 }
 
-// PWA Setup
 function setupPWA() {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Error:', err));
-  }
-
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    const btn = document.getElementById('pwaInstallBtn');
-    if (btn) btn.classList.remove('hidden'), btn.classList.add('flex');
-  });
-}
-
-function installPWA() {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then((choice) => {
-      if (choice.outcome === 'accepted') {
-        document.getElementById('pwaInstallBtn').classList.add('hidden');
-      }
-      deferredPrompt = null;
-    });
   }
 }
