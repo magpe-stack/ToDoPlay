@@ -3,7 +3,30 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Animações e Transições */
+/* Suporte a Tema Claro / Escuro via classe 'light' */
+html.light body {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+html.light header,
+html.light nav,
+html.light section form,
+html.light section div,
+html.light #phraseModal > div {
+  background-color: #ffffff;
+  border-color: #e2e8f0;
+  color: #0f172a;
+}
+
+html.light input,
+html.light select {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+/* Animações */
 .animate-fade-in {
   animation: fadeIn 0.25s ease-out forwards;
 }
@@ -19,7 +42,6 @@ body {
   }
 }
 
-/* Abas de Navegação */
 .nav-tab {
   color: #64748b;
   border-bottom-color: transparent;
@@ -30,7 +52,6 @@ body {
   border-bottom-color: #6366f1;
 }
 
-/* Checkbox Estilizado */
 .check-box-btn {
   width: 24px;
   height: 24px;
@@ -47,7 +68,6 @@ body {
   background-color: rgba(99, 102, 241, 0.1);
 }
 
-/* Barra de rolagem */
 ::-webkit-scrollbar {
   width: 6px;
 }
