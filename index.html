@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full bg-slate-950">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#6366f1">
+  <meta name="description" content="To Do Play: Transforme suas tarefas diárias em um jogo de conquistas, níveis e recompensas!">
+  <title>To Do Play</title>
+
+  <!-- PWA & Favicons -->
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <link rel="icon" type="image/png" href="./icon-192.png">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+
+  <!-- Google Fonts & Canvas Confetti -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body class="min-h-screen text-slate-100 bg-slate-950 antialiased flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+  <!-- HUD / Player Header -->
+  <header class="w-full border-b border-slate-800 bg-slate-900/90 backdrop-blur-md sticky top-0 z-40 px-4 py-3">
+    <div class="max-w-2xl mx-auto space-y-3">
+      
+      <!-- Top Row: Avatar, Nível, Moedas & PWA -->
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="relative">
+            <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-xl shadow-lg shadow-indigo-500/20" id="playerAvatar">
+              🎮
+            </div>
+            <span id="levelBadge" class="absolute -bottom-1 -right-1 bg-amber-400 text-slate-950 font-extrabold text-[10px] px-1.5 py-0.5 rounded-full shadow">
+              Nv.1
+            </span>
+          </div>
+          <div>
+            <h1 id="playerTitle" class="text-sm font-extrabold text-white leading-tight">Aprendiz de Foco</h1>
+            <div class="flex items-center gap-3 text-xs mt-0.5">
+              <span class="flex items-center gap-1 font-bold text-amber-400">
+                🪙 <span id="coinCount">0</span>
+              </span>
+              <span class="flex items-center gap-1 font-bold text-orange-400">
+                🔥 <span id="streakCount">0</span>d
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="pwaInstallBtn" onclick="installPWA()" class="hidden items-center gap-1 px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl shadow transition">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline">Instalar</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Barra de XP -->
+      <div class="space-y-1">
+        <div class="flex justify-between text-[11px] font-semibold text-slate-400">
+          <span>Experiência (XP)</span>
+          <span id="xpText" class="text-indigo-400">0 / 100 XP</span>
+        </div>
+        <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden p-0.5">
+          <div id="xpBar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Navegação por Abas -->
+  <nav class="w-full bg-slate-900 border-b border-slate-800 sticky top-[95px] z-30">
+    <div class="max-w-2xl mx-auto flex justify-around">
+      <button onclick="switchTab('tasks')" id="tabTasks" class="nav-tab active flex items-center gap-2 py-3 px-4 font-bold text-xs border-b-2 transition">
+        <i data-lucide="check-square" class="w-4 h-4"></i>
+        <span>Tarefas</span>
+      </button>
+      <button onclick="switchTab('rewards')" id="tabRewards" class="nav-tab flex items-center gap-2 py-3 px-4 font-bold text-xs border-b-2 transition">
+        <i data-lucide="gift" class="w-4 h-4"></i>
+        <span>Loja de Recompensas</span>
+      </button>
+      <button onclick="switchTab('achievements')" id="tabAchievements" class="nav-tab flex items-center gap-2 py-3 px-4 font-bold text-xs border-b-2 transition">
+        <i data-lucide="trophy" class="w-4 h-4"></i>
+        <span>Conquistas</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Conteúdo Principal -->
+  <main class="flex-1 max-w-2xl w-full mx-auto p-4 space-y-6">
+
+    <!-- ABA 1: TAREFAS -->
+    <section id="secTasks" class="space-y-5 animate-fade-in">
+      
+      <!-- Criar Nova Tarefa -->
+      <form id="formAddTask" onsubmit="handleAddTask(event)" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3">
+        <input type="text" id="inputTaskTitle" placeholder="O que você precisa realizar hoje?" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+        
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-400 font-semibold">Dificuldade:</span>
+            <select id="selectDifficulty" class="bg-slate-950 border border-slate-800 text-xs font-semibold rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-indigo-500">
+              <option value="easy">🟢 Fácil (+15 XP | 🪙 10)</option>
+              <option value="medium" selected>🟡 Média (+30 XP | 🪙 25)</option>
+              <option value="hard">🔴 Difícil (+60 XP | 🪙 50)</option>
+            </select>
+          </div>
+
+          <button type="submit" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-500/20 transition flex items-center gap-1.5">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Adicionar Quest</span>
+          </button>
+        </div>
+      </form>
+
+      <!-- Lista de Tarefas Ativas -->
+      <div class="space-y-3">
+        <h2 class="text-xs font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+          <span>Quests Diárias</span>
+          <span id="activeCountBadge" class="bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded-md text-[10px]">0</span>
+        </h2>
+        <div id="listTasks" class="space-y-2.5">
+          <!-- Injetado via JS -->
+        </div>
+      </div>
+
+      <!-- Tarefas Concluídas -->
+      <div class="space-y-3 pt-4 border-t border-slate-800/80">
+        <h2 class="text-xs font-extrabold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+          <span>Quests Concluídas Hoje</span>
+        </h2>
+        <div id="listCompletedTasks" class="space-y-2 opacity-75">
+          <!-- Injetado via JS -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ABA 2: LOJA DE RECOMPENSAS DA VIDA REAL -->
+    <section id="secRewards" class="hidden space-y-5 animate-fade-in">
+      <div class="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/20 rounded-2xl p-4 flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-bold text-amber-400">Recompensas da Vida Real</h3>
+          <p class="text-xs text-slate-400">Troque suas moedas conquistadas por momentos de descanso e mimos!</p>
+        </div>
+        <div class="text-2xl font-extrabold text-amber-400 flex items-center gap-1">
+          🪙 <span id="rewardCoinBalance">0</span>
+        </div>
+      </div>
+
+      <!-- Adicionar Recompensa -->
+      <form id="formAddReward" onsubmit="handleAddReward(event)" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3">
+        <div class="flex gap-2">
+          <input type="text" id="inputRewardTitle" placeholder="Ex: Ver 1 episódio de série, Comer um doce..." required class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 transition">
+          <input type="number" id="inputRewardCost" min="10" step="5" value="50" placeholder="Custo" required class="w-24 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-amber-400 font-bold focus:outline-none focus:border-amber-500">
+        </div>
+        <button type="submit" class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl shadow transition flex items-center justify-center gap-1.5">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i>
+          <span>Cadastrar Recompensa</span>
+        </button>
+      </form>
+
+      <!-- Lista de Recompensas -->
+      <div id="listRewards" class="grid sm:grid-cols-2 gap-3">
+        <!-- Injetado via JS -->
+      </div>
+    </section>
+
+    <!-- ABA 3: CONQUISTAS -->
+    <section id="secAchievements" class="hidden space-y-4 animate-fade-in">
+      <div class="space-y-1">
+        <h3 class="text-sm font-bold text-white">Mural de Medaghas</h3>
+        <p class="text-xs text-slate-400">Desbloqueie conquistas conforme progride nas suas tarefas diárias!</p>
+      </div>
+
+      <div id="listAchievements" class="grid sm:grid-cols-2 gap-3">
+        <!-- Injetado via JS -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900 border border-slate-700 text-white text-xs font-semibold px-4 py-3 rounded-2xl shadow-2xl opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-2.5">
+    <span id="toastIcon">🎉</span>
+    <span id="toastMessage">Sua conquista foi registrada!</span>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
