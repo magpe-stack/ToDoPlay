@@ -1,4 +1,4 @@
-const CACHE_NAME = 'todo-play-v1';
+const CACHE_NAME = 'todo-play-rpg-v2';
 const ASSETS = [
   './',
   './index.html',
