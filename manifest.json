@@ -1,7 +1,7 @@
 {
   "name": "To Do Play",
   "short_name": "ToDoPlay",
-  "description": "Transforme suas tarefas diárias em um jogo de conquistas, níveis e recompensas!",
+  "description": "RPG de produtividade com batalhas contra chefões, níveis e 100 medalhas com frases secretas!",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#020617",
