@@ -1,36 +1,39 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="h-full bg-slate-950">
+<html lang="pt-BR" class="h-full">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#6366f1">
-  <meta name="description" content="To Do Play: Transforme suas tarefas diárias em um jogo de conquistas, níveis e recompensas!">
-  <title>To Do Play</title>
+  <meta name="description" content="To Do Play: RPG de produtividade com batalhas contra chefões, níveis e 100 medalhas com frases secretas!">
+  <title>To Do Play - RPG de Produtividade</title>
 
-  <!-- PWA & Favicons -->
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <link rel="icon" type="image/png" href="./icon-192.png">
   <link rel="apple-touch-icon" href="./icon-192.png">
 
-  <!-- Google Fonts & Canvas Confetti -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <link rel="stylesheet" href="./style.css">
 </head>
-<body class="min-h-screen text-slate-100 bg-slate-950 antialiased flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+<body class="min-h-screen bg-slate-950 text-slate-100 dark:bg-slate-950 dark:text-slate-100 antialiased flex flex-col justify-between transition-colors duration-300">
 
   <!-- HUD / Player Header -->
-  <header class="w-full border-b border-slate-800 bg-slate-900/90 backdrop-blur-md sticky top-0 z-40 px-4 py-3">
+  <header class="w-full border-b border-slate-800 bg-slate-900/90 dark:bg-slate-900/90 backdrop-blur-md sticky top-0 z-40 px-4 py-3">
     <div class="max-w-2xl mx-auto space-y-3">
       
-      <!-- Top Row: Avatar, Nível, Moedas & PWA -->
+      <!-- Linha Superior: Perfil, Nível, Theme Toggle e PWA -->
       <div class="flex items-center justify-between gap-3">
         <div class="flex items-center gap-3">
           <div class="relative">
@@ -44,17 +47,23 @@
           <div>
             <h1 id="playerTitle" class="text-sm font-extrabold text-white leading-tight">Aprendiz de Foco</h1>
             <div class="flex items-center gap-3 text-xs mt-0.5">
-              <span class="flex items-center gap-1 font-bold text-amber-400">
-                🪙 <span id="coinCount">0</span>
-              </span>
               <span class="flex items-center gap-1 font-bold text-orange-400">
-                🔥 <span id="streakCount">0</span>d
+                🔥 <span id="streakCount">0</span>d streak
+              </span>
+              <span class="flex items-center gap-1 font-bold text-emerald-400">
+                ⚔️ <span id="bossesDefeatedCount">0</span> chefões
               </span>
             </div>
           </div>
         </div>
 
         <div class="flex items-center gap-2">
+          <!-- Botão Modo Claro / Escuro -->
+          <button onclick="toggleTheme()" class="p-2 bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-xl transition" title="Alternar Modo Claro/Escuro">
+            <i data-lucide="sun" id="themeIconSun" class="w-4 h-4 hidden"></i>
+            <i data-lucide="moon" id="themeIconMoon" class="w-4 h-4"></i>
+          </button>
+
           <button id="pwaInstallBtn" onclick="installPWA()" class="hidden items-center gap-1 px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl shadow transition">
             <i data-lucide="download" class="w-3.5 h-3.5"></i>
             <span class="hidden sm:inline">Instalar</span>
@@ -83,13 +92,13 @@
         <i data-lucide="check-square" class="w-4 h-4"></i>
         <span>Tarefas</span>
       </button>
-      <button onclick="switchTab('rewards')" id="tabRewards" class="nav-tab flex items-center gap-2 py-3 px-4 font-bold text-xs border-b-2 transition">
-        <i data-lucide="gift" class="w-4 h-4"></i>
-        <span>Loja de Recompensas</span>
+      <button onclick="switchTab('boss')" id="tabBoss" class="nav-tab flex items-center gap-2 py-3 px-4 font-bold text-xs border-b-2 transition">
+        <i data-lucide="swords" class="w-4 h-4"></i>
+        <span>Arena do Chefão</span>
       </button>
       <button onclick="switchTab('achievements')" id="tabAchievements" class="nav-tab flex items-center gap-2 py-3 px-4 font-bold text-xs border-b-2 transition">
         <i data-lucide="trophy" class="w-4 h-4"></i>
-        <span>Conquistas</span>
+        <span>Conquistas (100)</span>
       </button>
     </div>
   </nav>
@@ -100,7 +109,7 @@
     <!-- ABA 1: TAREFAS -->
     <section id="secTasks" class="space-y-5 animate-fade-in">
       
-      <!-- Criar Nova Tarefa -->
+      <!-- Form Adicionar Tarefa -->
       <form id="formAddTask" onsubmit="handleAddTask(event)" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3">
         <input type="text" id="inputTaskTitle" placeholder="O que você precisa realizar hoje?" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
         
@@ -108,90 +117,124 @@
           <div class="flex items-center gap-2">
             <span class="text-xs text-slate-400 font-semibold">Dificuldade:</span>
             <select id="selectDifficulty" class="bg-slate-950 border border-slate-800 text-xs font-semibold rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-indigo-500">
-              <option value="easy">🟢 Fácil (+15 XP | 🪙 10)</option>
-              <option value="medium" selected>🟡 Média (+30 XP | 🪙 25)</option>
-              <option value="hard">🔴 Difícil (+60 XP | 🪙 50)</option>
+              <option value="easy">🟢 Fácil (+15 XP | 💥 15 DMG)</option>
+              <option value="medium" selected>🟡 Média (+30 XP | 💥 30 DMG)</option>
+              <option value="hard">🔴 Difícil (+60 XP | 💥 60 DMG)</option>
             </select>
           </div>
 
           <button type="submit" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-500/20 transition flex items-center gap-1.5">
             <i data-lucide="plus" class="w-4 h-4"></i>
-            <span>Adicionar Quest</span>
+            <span>Adicionar Tarefa</span>
           </button>
         </div>
       </form>
 
-      <!-- Lista de Tarefas Ativas -->
+      <!-- Lista Ativas -->
       <div class="space-y-3">
         <h2 class="text-xs font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
           <span>Quests Diárias</span>
           <span id="activeCountBadge" class="bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded-md text-[10px]">0</span>
         </h2>
-        <div id="listTasks" class="space-y-2.5">
-          <!-- Injetado via JS -->
-        </div>
+        <div id="listTasks" class="space-y-2.5"></div>
       </div>
 
-      <!-- Tarefas Concluídas -->
+      <!-- Lista Concluídas -->
       <div class="space-y-3 pt-4 border-t border-slate-800/80">
         <h2 class="text-xs font-extrabold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
           <span>Quests Concluídas Hoje</span>
         </h2>
-        <div id="listCompletedTasks" class="space-y-2 opacity-75">
-          <!-- Injetado via JS -->
-        </div>
+        <div id="listCompletedTasks" class="space-y-2 opacity-75"></div>
       </div>
 
     </section>
 
-    <!-- ABA 2: LOJA DE RECOMPENSAS DA VIDA REAL -->
-    <section id="secRewards" class="hidden space-y-5 animate-fade-in">
-      <div class="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/20 rounded-2xl p-4 flex items-center justify-between">
+    <!-- ABA 2: ARENA DO CHEFÃO -->
+    <section id="secBoss" class="hidden space-y-5 animate-fade-in">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 text-center space-y-4 shadow-2xl relative overflow-hidden">
+        
+        <div class="flex justify-between items-center text-xs text-slate-400 font-bold uppercase tracking-wider">
+          <span id="bossStageText">Fase 1</span>
+          <span>Batalha de Produtividade</span>
+        </div>
+
+        <!-- Visual do Chefão -->
+        <div class="relative inline-block py-4">
+          <div id="bossEmoji" class="text-7xl transition-transform duration-200">
+            👹
+          </div>
+        </div>
+
         <div>
-          <h3 class="text-sm font-bold text-amber-400">Recompensas da Vida Real</h3>
-          <p class="text-xs text-slate-400">Troque suas moedas conquistadas por momentos de descanso e mimos!</p>
+          <h3 id="bossName" class="text-xl font-extrabold text-white">Monstro da Procrastinação</h3>
+          <p id="bossDesc" class="text-xs text-slate-400 mt-1">Conclua tarefas diárias para causar dano ao HP do chefão!</p>
         </div>
-        <div class="text-2xl font-extrabold text-amber-400 flex items-center gap-1">
-          🪙 <span id="rewardCoinBalance">0</span>
-        </div>
-      </div>
 
-      <!-- Adicionar Recompensa -->
-      <form id="formAddReward" onsubmit="handleAddReward(event)" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3">
-        <div class="flex gap-2">
-          <input type="text" id="inputRewardTitle" placeholder="Ex: Ver 1 episódio de série, Comer um doce..." required class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 transition">
-          <input type="number" id="inputRewardCost" min="10" step="5" value="50" placeholder="Custo" required class="w-24 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-amber-400 font-bold focus:outline-none focus:border-amber-500">
+        <!-- Barra de Vida do Chefão -->
+        <div class="space-y-1.5 max-w-md mx-auto">
+          <div class="flex justify-between text-xs font-bold">
+            <span class="text-red-400">HP do Chefão</span>
+            <span id="bossHpText" class="text-slate-300">100 / 100</span>
+          </div>
+          <div class="w-full bg-slate-950 rounded-full h-4 p-0.5 border border-slate-800">
+            <div id="bossHpBar" class="bg-gradient-to-r from-red-600 to-rose-500 h-2.5 rounded-full transition-all duration-300" style="width: 100%"></div>
+          </div>
         </div>
-        <button type="submit" class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl shadow transition flex items-center justify-center gap-1.5">
-          <i data-lucide="plus-circle" class="w-4 h-4"></i>
-          <span>Cadastrar Recompensa</span>
-        </button>
-      </form>
 
-      <!-- Lista de Recompensas -->
-      <div id="listRewards" class="grid sm:grid-cols-2 gap-3">
-        <!-- Injetado via JS -->
+        <div class="bg-slate-950/60 rounded-2xl p-3 border border-slate-800/80 text-xs text-slate-300 text-left space-y-1">
+          <span class="font-bold text-amber-400">💡 Como Funciona o Dano:</span>
+          <p>• Tarefa Fácil: <b class="text-white">15 de Dano</b></p>
+          <p>• Tarefa Média: <b class="text-white">30 de Dano</b></p>
+          <p>• Tarefa Difícil: <b class="text-white">60 de Dano</b></p>
+        </div>
+
       </div>
     </section>
 
-    <!-- ABA 3: CONQUISTAS -->
+    <!-- ABA 3: CONQUISTAS (100 MEDALHAS) -->
     <section id="secAchievements" class="hidden space-y-4 animate-fade-in">
-      <div class="space-y-1">
-        <h3 class="text-sm font-bold text-white">Mural de Medaghas</h3>
-        <p class="text-xs text-slate-400">Desbloqueie conquistas conforme progride nas suas tarefas diárias!</p>
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="text-sm font-bold text-white">Mural de Conquistas</h3>
+          <p class="text-xs text-slate-400">100 medalhas e frases motivacionais secretas a desbloquear!</p>
+        </div>
+        <span id="achievementsCountBadge" class="bg-amber-500/10 border border-amber-500/20 text-amber-400 font-bold text-xs px-2.5 py-1 rounded-xl">
+          0 / 100
+        </span>
       </div>
 
-      <div id="listAchievements" class="grid sm:grid-cols-2 gap-3">
-        <!-- Injetado via JS -->
+      <!-- Filtro por Categoria -->
+      <div class="flex gap-2 overflow-x-auto pb-1" id="achieveCategoryTabs">
+        <button onclick="filterAchievements('all')" class="ach-tab active px-3 py-1 bg-slate-800 text-xs font-bold rounded-lg whitespace-nowrap">Todas</button>
+        <button onclick="filterAchievements('tasks')" class="ach-tab px-3 py-1 bg-slate-800 text-xs font-bold rounded-lg whitespace-nowrap">Tarefas</button>
+        <button onclick="filterAchievements('streak')" class="ach-tab px-3 py-1 bg-slate-800 text-xs font-bold rounded-lg whitespace-nowrap">Streak</button>
+        <button onclick="filterAchievements('boss')" class="ach-tab px-3 py-1 bg-slate-800 text-xs font-bold rounded-lg whitespace-nowrap">Chefões</button>
+        <button onclick="filterAchievements('level')" class="ach-tab px-3 py-1 bg-slate-800 text-xs font-bold rounded-lg whitespace-nowrap">Nível</button>
       </div>
+
+      <div id="listAchievements" class="grid sm:grid-cols-2 gap-3"></div>
     </section>
 
   </main>
 
+  <!-- Modal de Frase Motivacional Secreta -->
+  <div id="phraseModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl animate-fade-in">
+      <div class="text-5xl" id="modalIcon">🏆</div>
+      <h4 id="modalTitle" class="text-base font-bold text-amber-400">Título da Medalha</h4>
+      <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800">
+        <p id="modalPhrase" class="text-sm italic text-slate-200 leading-relaxed">"Sua frase motivacional secreta aqui."</p>
+      </div>
+      <button onclick="closePhraseModal()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl transition">
+        Fechar
+      </button>
+    </div>
+  </div>
+
   <!-- Toast -->
   <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900 border border-slate-700 text-white text-xs font-semibold px-4 py-3 rounded-2xl shadow-2xl opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-2.5">
     <span id="toastIcon">🎉</span>
-    <span id="toastMessage">Sua conquista foi registrada!</span>
+    <span id="toastMessage">Ação registrada!</span>
   </div>
 
   <script src="./app.js"></script>
