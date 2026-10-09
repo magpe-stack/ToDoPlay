@@ -30,21 +30,3 @@ O **To Do Play** transforma sua lista de tarefas diárias em um jogo de RPG e pr
 2. Clique no ícone de instalação no canto superior da barra de endereços para ter o app direto na área de trabalho.
 
 ---
-
-## ⚙️ Passo a Passo para Publicar no GitHub Pages
-
-1. Acesse o seu repositório no [GitHub](https://github.com/).
-2. Suba todos os arquivos do projeto:
-   - `index.html`
-   - `style.css`
-   - `app.js`
-   - `manifest.json`
-   - `sw.js`
-   - `favicon.svg`
-   - `icon-192.png`
-   - `icon-512.png`
-   - `README.md`
-3. Vá em **Settings** no repositório.
-4. No menu lateral, clique em **Pages**.
-5. Em **Branch**, selecione `main` (ou `master`) e salve.
-6. Aguarde alguns instantes e acesse o link público gerado pelo GitHub Pages!
