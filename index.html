@@ -27,7 +27,7 @@
 
   <link rel="stylesheet" href="./style.css">
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100 antialiased flex flex-col justify-between transition-colors duration-300">
+<body class="min-h-screen antialiased flex flex-col justify-between transition-colors duration-300">
 
   <!-- HUD / Player Header -->
   <header class="w-full border-b border-slate-800 bg-slate-900/90 backdrop-blur-md sticky top-0 z-40 px-4 py-3">
@@ -45,7 +45,7 @@
             </span>
           </div>
           <div>
-            <h1 id="playerTitle" class="text-sm font-extrabold text-white leading-tight">Aprendiz de Foco</h1>
+            <h1 id="playerTitle" class="text-sm font-extrabold leading-tight">Aprendiz de Foco</h1>
             <div class="flex items-center gap-3 text-xs mt-0.5">
               <span class="flex items-center gap-1 font-bold text-orange-400">
                 🔥 <span id="streakCount">0</span>d streak
@@ -75,10 +75,10 @@
       <div class="space-y-1">
         <div class="flex justify-between text-[11px] font-semibold text-slate-400">
           <span>Experiência (XP)</span>
-          <span id="xpText" class="text-indigo-400">0 / 100 XP</span>
+          <span id="xpText" class="text-indigo-400 font-bold">0 / 100 XP</span>
         </div>
-        <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden p-0.5">
-          <div id="xpBar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+        <div class="w-full xp-track-bg rounded-full h-3 overflow-hidden p-0.5 border">
+          <div id="xpBar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
         </div>
       </div>
 
@@ -111,12 +111,12 @@
       
       <!-- Form Adicionar Tarefa -->
       <form id="formAddTask" onsubmit="handleAddTask(event)" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3">
-        <input type="text" id="inputTaskTitle" placeholder="O que você precisa realizar hoje?" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+        <input type="text" id="inputTaskTitle" placeholder="O que você precisa realizar hoje?" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
         
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div class="flex items-center gap-2">
             <span class="text-xs text-slate-400 font-semibold">Dificuldade:</span>
-            <select id="selectDifficulty" class="bg-slate-950 border border-slate-800 text-xs font-semibold rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-indigo-500">
+            <select id="selectDifficulty" class="bg-slate-950 border border-slate-800 text-xs font-semibold rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-500">
               <option value="easy">🟢 Fácil (+15 XP | 💥 15 DMG)</option>
               <option value="medium" selected>🟡 Média (+30 XP | 💥 30 DMG)</option>
               <option value="hard">🔴 Difícil (+60 XP | 💥 60 DMG)</option>
@@ -166,7 +166,7 @@
         </div>
 
         <div>
-          <h3 id="bossName" class="text-xl font-extrabold text-white">Monstro da Procrastinação</h3>
+          <h3 id="bossName" class="text-xl font-extrabold">Monstro da Procrastinação</h3>
           <p id="bossDesc" class="text-xs text-slate-400 mt-1">Conclua tarefas diárias para causar dano ao HP do chefão!</p>
         </div>
 
@@ -174,18 +174,18 @@
         <div class="space-y-1.5 max-w-md mx-auto">
           <div class="flex justify-between text-xs font-bold">
             <span class="text-red-400">HP do Chefão</span>
-            <span id="bossHpText" class="text-slate-300">100 / 100</span>
+            <span id="bossHpText" class="text-slate-400">100 / 100</span>
           </div>
-          <div class="w-full bg-slate-950 rounded-full h-4 p-0.5 border border-slate-800">
+          <div class="w-full xp-track-bg rounded-full h-4 p-0.5 border">
             <div id="bossHpBar" class="bg-gradient-to-r from-red-600 to-rose-500 h-2.5 rounded-full transition-all duration-300" style="width: 100%"></div>
           </div>
         </div>
 
-        <div class="bg-slate-950/60 rounded-2xl p-3 border border-slate-800/80 text-xs text-slate-300 text-left space-y-1">
+        <div class="boss-info-box bg-slate-950/60 rounded-2xl p-3 border border-slate-800/80 text-xs text-left space-y-1">
           <span class="font-bold text-amber-400">💡 Como Funciona o Dano:</span>
-          <p>• Tarefa Fácil: <b class="text-white">15 de Dano</b></p>
-          <p>• Tarefa Média: <b class="text-white">30 de Dano</b></p>
-          <p>• Tarefa Difícil: <b class="text-white">60 de Dano</b></p>
+          <p>• Tarefa Fácil: <b>15 de Dano</b></p>
+          <p>• Tarefa Média: <b>30 de Dano</b></p>
+          <p>• Tarefa Difícil: <b>60 de Dano</b></p>
         </div>
 
       </div>
@@ -195,7 +195,7 @@
     <section id="secAchievements" class="hidden space-y-4 animate-fade-in">
       <div class="flex justify-between items-center">
         <div>
-          <h3 class="text-sm font-bold text-white">Mural de Conquistas</h3>
+          <h3 class="text-sm font-bold">Mural de Conquistas</h3>
           <p class="text-xs text-slate-400">100 medalhas e frases motivacionais secretas a desbloquear!</p>
         </div>
         <span id="achievementsCountBadge" class="bg-amber-500/10 border border-amber-500/20 text-amber-400 font-bold text-xs px-2.5 py-1 rounded-xl">
