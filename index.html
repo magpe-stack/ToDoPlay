@@ -27,10 +27,10 @@
 
   <link rel="stylesheet" href="./style.css">
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100 dark:bg-slate-950 dark:text-slate-100 antialiased flex flex-col justify-between transition-colors duration-300">
+<body class="min-h-screen bg-slate-950 text-slate-100 antialiased flex flex-col justify-between transition-colors duration-300">
 
   <!-- HUD / Player Header -->
-  <header class="w-full border-b border-slate-800 bg-slate-900/90 dark:bg-slate-900/90 backdrop-blur-md sticky top-0 z-40 px-4 py-3">
+  <header class="w-full border-b border-slate-800 bg-slate-900/90 backdrop-blur-md sticky top-0 z-40 px-4 py-3">
     <div class="max-w-2xl mx-auto space-y-3">
       
       <!-- Linha Superior: Perfil, Nível, Theme Toggle e PWA -->
@@ -222,7 +222,7 @@
     <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl animate-fade-in">
       <div class="text-5xl" id="modalIcon">🏆</div>
       <h4 id="modalTitle" class="text-base font-bold text-amber-400">Título da Medalha</h4>
-      <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800">
+      <div id="modalPhraseContainer" class="bg-slate-950 p-4 rounded-2xl border border-slate-800">
         <p id="modalPhrase" class="text-sm italic text-slate-200 leading-relaxed">"Sua frase motivacional secreta aqui."</p>
       </div>
       <button onclick="closePhraseModal()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl transition">
