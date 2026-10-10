@@ -3,40 +3,79 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Base de Transição de Cores */
-body, header, nav, section, div, button, input, select {
+/* Transição suave de tema */
+body, header, nav, section, div, button, input, select, p, h1, h2, h3, h4, span {
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
-/* --- REGRAS DO MODO CLARO (class="light") --- */
+/* --- MODO ESCURO (Padrão) --- */
+body {
+  background-color: #020617;
+  color: #f8fafc;
+}
+
+#playerTitle,
+#bossName,
+.task-title-text {
+  color: #ffffff;
+}
+
+.xp-track-bg {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+/* --- MODO CLARO (class="light") --- */
 html.light body {
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
 }
 
 html.light header,
 html.light nav {
-  background-color: rgba(255, 255, 255, 0.95);
-  border-color: #e2e8f0;
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-color: #e2e8f0 !important;
 }
 
 html.light nav button {
-  color: #64748b;
+  color: #64748b !important;
 }
 
 html.light nav button.active {
-  color: #4f46e5;
-  border-bottom-color: #4f46e5;
+  color: #4f46e5 !important;
+  border-bottom-color: #4f46e5 !important;
 }
 
-/* Forms e Cards */
+/* Cards, Formulários e Containers */
 html.light section form,
 html.light section .bg-slate-900,
 html.light #phraseModal > div {
   background-color: #ffffff !important;
   border-color: #e2e8f0 !important;
   color: #0f172a !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Correção de Títulos, Apelido, Chefão e Tarefas no Modo Claro */
+html.light #playerTitle,
+html.light #bossName,
+html.light .task-title-text,
+html.light .text-white,
+html.light h1, html.light h2, html.light h3, html.light h4 {
+  color: #0f172a !important;
+}
+
+/* Trilhos das Barras de XP e HP no Modo Claro */
+html.light .xp-track-bg {
+  background-color: #e2e8f0 !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* Caixa de Informações do Dano do Chefão no Modo Claro */
+html.light .boss-info-box {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
 }
 
 html.light input,
@@ -57,19 +96,7 @@ html.light .ach-tab.active {
   color: #ffffff !important;
 }
 
-/* Medalhas Bloqueadas no Modo Claro */
-html.light .bg-slate-900.opacity-50 {
-  background-color: #f1f5f9 !important;
-  border-color: #e2e8f0 !important;
-  opacity: 0.8 !important;
-}
-
-html.light .bg-slate-900.opacity-50 h4,
-html.light .bg-slate-900.opacity-50 p {
-  color: #64748b !important;
-}
-
-/* Modal no Modo Claro */
+/* Modal de Frase Motivacional no Modo Claro */
 html.light #modalPhrase {
   color: #1e293b !important;
 }
