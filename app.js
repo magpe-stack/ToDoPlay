@@ -93,6 +93,16 @@ window.addEventListener('DOMContentLoaded', () => {
   if (window.lucide) lucide.createIcons();
 });
 
+function resetGameProgress() {
+  const confirmed = confirm("⚠️ ATENÇÃO: Deseja realmente reiniciar todo o seu progresso?\n\nIsso apagará todas as suas tarefas, níveis, histórico de chefões e medalhas conquistadas. Essa ação não pode ser desfeita.");
+  
+  if (confirmed) {
+    localStorage.removeItem('tdp_v2_player');
+    localStorage.removeItem('tdp_v2_tasks');
+    window.location.reload();
+  }
+}
+
 // Alternar e Aplicar Tema
 function toggleTheme() {
   const newTheme = player.theme === 'dark' ? 'light' : 'dark';
