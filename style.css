@@ -3,30 +3,83 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Suporte a Tema Claro / Escuro via classe 'light' */
+/* Base de Transição de Cores */
+body, header, nav, section, div, button, input, select {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+/* --- REGRAS DO MODO CLARO (class="light") --- */
 html.light body {
   background-color: #f8fafc;
   color: #0f172a;
 }
 
 html.light header,
-html.light nav,
-html.light section form,
-html.light section div,
-html.light #phraseModal > div {
-  background-color: #ffffff;
+html.light nav {
+  background-color: rgba(255, 255, 255, 0.95);
   border-color: #e2e8f0;
-  color: #0f172a;
+}
+
+html.light nav button {
+  color: #64748b;
+}
+
+html.light nav button.active {
+  color: #4f46e5;
+  border-bottom-color: #4f46e5;
+}
+
+/* Forms e Cards */
+html.light section form,
+html.light section .bg-slate-900,
+html.light #phraseModal > div {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 html.light input,
 html.light select {
-  background-color: #f1f5f9;
-  border-color: #cbd5e1;
-  color: #0f172a;
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
 }
 
-/* Animações */
+/* Botões de Filtro das Conquistas no Modo Claro */
+html.light .ach-tab {
+  background-color: #e2e8f0 !important;
+  color: #334155 !important;
+}
+
+html.light .ach-tab.active {
+  background-color: #4f46e5 !important;
+  color: #ffffff !important;
+}
+
+/* Medalhas Bloqueadas no Modo Claro */
+html.light .bg-slate-900.opacity-50 {
+  background-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  opacity: 0.8 !important;
+}
+
+html.light .bg-slate-900.opacity-50 h4,
+html.light .bg-slate-900.opacity-50 p {
+  color: #64748b !important;
+}
+
+/* Modal no Modo Claro */
+html.light #modalPhrase {
+  color: #1e293b !important;
+}
+
+html.light #modalPhraseContainer {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* --- ANIMAÇÕES E COMPONENTES --- */
 .animate-fade-in {
   animation: fadeIn 0.25s ease-out forwards;
 }
@@ -43,7 +96,7 @@ html.light select {
 }
 
 .nav-tab {
-  color: #64748b;
+  color: #94a3b8;
   border-bottom-color: transparent;
 }
 
