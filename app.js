@@ -11,7 +11,6 @@ const BOSSES = [
 function generate100Achievements() {
   const achs = [];
   
-  // Categorias: tasks (1..50), streak (51..70), boss (71..85), level (86..100)
   for (let i = 1; i <= 50; i++) {
     achs.push({
       id: `a_${i}`,
@@ -68,7 +67,6 @@ function generate100Achievements() {
 
 const ACHIEVEMENTS_DATA = generate100Achievements();
 
-// Estado do Jogador
 const DEFAULT_PLAYER = {
   xp: 0,
   level: 1,
@@ -95,7 +93,7 @@ window.addEventListener('DOMContentLoaded', () => {
   if (window.lucide) lucide.createIcons();
 });
 
-// Tema Claro / Escuro
+// Alternar e Aplicar Tema
 function toggleTheme() {
   const newTheme = player.theme === 'dark' ? 'light' : 'dark';
   player.theme = newTheme;
@@ -145,7 +143,7 @@ function saveTasks() {
   renderTasks();
 }
 
-// Tarefas e Combate ao Chefão
+// Tarefas e Batalha
 function handleAddTask(e) {
   e.preventDefault();
   const title = document.getElementById('inputTaskTitle').value.trim();
@@ -182,14 +180,13 @@ function completeTask(id) {
   // Aplicar Dano no Chefão
   player.bossCurrentHp = Math.max(0, player.bossCurrentHp - damage);
 
-  // Animação de Dano no Emoji
   const bossEmoji = document.getElementById('bossEmoji');
   if (bossEmoji) {
     bossEmoji.classList.add('scale-125', 'rotate-12');
     setTimeout(() => bossEmoji.classList.remove('scale-125', 'rotate-12'), 200);
   }
 
-  // Se Derrotou o Chefão
+  // Derrotar Chefão
   if (player.bossCurrentHp <= 0) {
     player.bossesDefeated++;
     player.bossStage++;
@@ -235,7 +232,6 @@ function checkLevelUp() {
   }
 }
 
-// Renderizar Arena do Chefão
 function renderBoss() {
   const currentBoss = BOSSES.find(b => b.stage === player.bossStage) || {
     stage: player.bossStage,
@@ -255,7 +251,6 @@ function renderBoss() {
   document.getElementById('bossHpBar').style.width = `${pct}%`;
 }
 
-// Renderizar Tarefas
 function renderTasks() {
   const listActive = document.getElementById('listTasks');
   const listCompleted = document.getElementById('listCompletedTasks');
@@ -307,7 +302,7 @@ function renderTasks() {
   if (window.lucide) lucide.createIcons();
 }
 
-// Renderizar Conquistas
+// Renderizar Conquistas com busca por ID para abrir a modal de Frase
 function renderAchievements() {
   const list = document.getElementById('listAchievements');
   let unlockedTotal = 0;
@@ -335,7 +330,7 @@ function renderAchievements() {
           </div>
         </div>
         ${unlocked ? `
-          <button onclick="openPhraseModal('${a.title}', '${a.phrase}', '${a.icon}')" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-[10px] rounded-lg shadow whitespace-nowrap">
+          <button onclick="openPhraseModalById('${a.id}')" class="px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-[10px] rounded-lg shadow whitespace-nowrap">
             Ver Frase
           </button>
         ` : ''}
@@ -348,15 +343,28 @@ function renderAchievements() {
 
 function filterAchievements(cat) {
   activeAchCategory = cat;
-  document.querySelectorAll('.ach-tab').forEach(b => b.classList.remove('active', 'bg-indigo-600', 'text-white'));
+  document.querySelectorAll('.ach-tab').forEach(b => {
+    b.classList.remove('active');
+  });
+  
+  // Marca o botão clicado como ativo
+  const btnMap = { all: 0, tasks: 1, streak: 2, boss: 3, level: 4 };
+  const buttons = document.querySelectorAll('.ach-tab');
+  if (buttons[btnMap[cat]]) {
+    buttons[btnMap[cat]].classList.add('active');
+  }
+
   renderAchievements();
 }
 
-// Modal de Frase Secreta
-function openPhraseModal(title, phrase, icon) {
-  document.getElementById('modalTitle').textContent = title;
-  document.getElementById('modalPhrase').textContent = phrase;
-  document.getElementById('modalIcon').textContent = icon;
+// Modal de Frase Secreta (Buscando diretamente por ID para evitar falhas de aspas no HTML)
+function openPhraseModalById(achId) {
+  const ach = ACHIEVEMENTS_DATA.find(a => a.id === achId);
+  if (!ach) return;
+
+  document.getElementById('modalTitle').textContent = ach.title;
+  document.getElementById('modalPhrase').textContent = ach.phrase;
+  document.getElementById('modalIcon').textContent = ach.icon;
   document.getElementById('phraseModal').classList.remove('hidden');
   document.getElementById('phraseModal').classList.add('flex');
 }
